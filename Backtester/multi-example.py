@@ -7,7 +7,7 @@ import datetime
 
 import backtrader as bt
 
-from oanda_data import get_historical_data_factory
+from oanda.oanda_data import get_historical_data_factory
 
 
 class TestSizer(bt.Sizer):

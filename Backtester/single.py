@@ -13,9 +13,10 @@ import random
 import backtrader as bt
 import matplotlib.pyplot as plt
 
-import strat_singles
 from helpers import print_trade_analysis, print_dict, print_sharpe_ratio, print_sqn
-from oanda_data import get_historical_data_factory
+from oanda.oanda_data import get_historical_data_factory
+from crypto import cryptocompare as cc
+import engulfing
 
 
 def parse_args():
@@ -95,8 +96,14 @@ def run_strategy(strategy):
         "granularity": "H4",
         "to": "2018-01-01T00:00:00Z"
     }
-    instrument = "EUR_USD"
-    df = get_historical_data_factory(instrument, params)
+    instrument = "AUD_USD"
+    df2 = get_historical_data_factory(instrument, params)
+    df2.dropna(inplace=True)
+
+    # crypto BTC USD
+    from_date = cc.to_seconds_epoch(datetime.datetime(2016, 1, 1))
+    to_date = cc.to_seconds_epoch(datetime.datetime(2018, 1, 1))
+    df = cc.get_df(from_date, to_date, time_period='histohour', agg=4, data_folder='data')
 
     # df = pd.read_pickle(r"C:\Users\vhphan\PycharmProjects\packt\Learn Algorithmic Trading\Chapter5\GOOG_data.pkl")
 
@@ -163,13 +170,15 @@ def run_strategy(strategy):
                           subplot=True,
                           dpi=900,
                           numfigs=1,
-                          plotymargin=10.0,
+                          # plotymargin=10.0,
+                          iplot=False
                           )
 
 
 if __name__ == '__main__':
+    # matplotlib.use('TkAgg')
     # get_instruments()
     # run_strategy(strategies.StarsStrategy)
     # run_strategy(strat_singles.MeanReversionAPO)
     # run_strategy(strategies.MomentumStrategy1)
-    run_strategy(strat_singles.Engulfing)
+    run_strategy(engulfing.Engulfing)

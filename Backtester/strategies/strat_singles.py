@@ -9,6 +9,7 @@ from my_indicators import SpecialEMA
 from generic import GenericStrategy
 from engulfing import Engulfing
 
+
 class MomentumStrategy1(GenericStrategy):
 
     def __init__(self):

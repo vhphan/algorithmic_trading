@@ -15,7 +15,7 @@ import backtrader as bt
 import matplotlib.pyplot as plt
 
 from strategies.strat_multiples import EngulfingMultipleInstruments
-from oanda_data import get_historical_data_factory
+from oanda.oanda_data import get_historical_data_factory
 from helpers import print_trade_analysis, print_dict, print_sharpe_ratio, print_sqn
 
 

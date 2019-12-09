@@ -61,39 +61,42 @@ class Engulfing(GenericStrategy):
         # Check if we are in the market
         # if len(self.data == 86):
         #     print('debug')
+        valid_days = 60 * self.data._timeframe / 24
 
         if not self.position:
 
-            # if self.engulfing == 100 and self.data[0] > self.ichimoku.senkou_span_a[0] and self.data[0] > \
-            #         self.ichimoku.senkou_span_b[0]:
-            #     entry_price = self.data.low[0]
-            #     stop_price = self.data.close[0] - self.std_dev[0] * self.std_scale
-            #     take_profit_price = self.data.close[0] + 2 * self.std_dev[0] * self.std_scale
-            #
-            #     qty = position_size(cash, stop_price, entry_price, self.params.risk)
-            #
-            #     # self.buy_order = self.buy_bracket(limitprice=take_profit_price, stopprice=stop_price,
-            #     #                                   exectype=bt.Order.Market, size=qty)
-            #
-            #     valid_entry = self.data.datetime.datetime(60)
-            #     valid_limit = valid_stop = datetime.timedelta(1000000)
-            #     self.buy_order = self.buy_bracket(limitprice=take_profit_price, limitargs=dict(valid=valid_limit),
-            #                                       stopprice=stop_price, stopargs=dict(valid=valid_stop),
-            #                                       exectype=bt.Order.Limit, size=qty, price=entry_price,
-            #                                       valid=valid_entry)
-            #
-            #     self.order_refs = [o.ref for o in self.buy_order]
-            #
-            #     self.log('BUY CREATE, %.2f' % self.dataclose[0])
-            #     self.log(f'BUY QUANTITY = {qty}')
-            #     self.log(f'ENTRY PRICE = {entry_price}')
-            #     self.log(f'SL PRICE = {stop_price}')
-            #     self.log(f'TP PRICE = {take_profit_price}')
-            #     self.log(f'CURRENT PRICE = {self.data[0]}')
+            if self.engulfing == 100 and self.data[0] > self.ichimoku.senkou_span_a[0] and self.data[0] > \
+                    self.ichimoku.senkou_span_b[0]:
+                entry_price = self.data.low[0]
+                stop_price = self.data.close[0] - self.std_dev[0] * self.std_scale
+                take_profit_price = self.data.close[0] + 2 * self.std_dev[0] * self.std_scale
+
+                qty = position_size(cash, stop_price, entry_price, self.params.risk)
+
+                # self.buy_order = self.buy_bracket(limitprice=take_profit_price, stopprice=stop_price,
+                #                                   exectype=bt.Order.Market, size=qty)
+
+                # valid_entry = self.data.datetime.datetime(60)
+
+                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(days=valid_days)
+                valid_limit = valid_stop = datetime.timedelta(1000000)
+
+                self.buy_order = self.buy_bracket(limitprice=take_profit_price, limitargs=dict(valid=valid_limit),
+                                                  stopprice=stop_price, stopargs=dict(valid=valid_stop),
+                                                  exectype=bt.Order.Limit, size=qty, price=entry_price,
+                                                  valid=valid_entry)
+
+                self.order_refs = [o.ref for o in self.buy_order]
+
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                self.log(f'BUY QUANTITY = {qty}')
+                self.log(f'ENTRY PRICE = {entry_price}')
+                self.log(f'SL PRICE = {stop_price}')
+                self.log(f'TP PRICE = {take_profit_price}')
+                self.log(f'CURRENT PRICE = {self.data[0]}')
 
             if self.engulfing == -100 and self.data[0] < self.ichimoku.senkou_span_a[0] and self.data[0] < \
                     self.ichimoku.senkou_span_b[0]:
-
                 entry_price = self.data.high[0]
                 stop_price = entry_price + self.std_dev[0] * self.std_scale
                 take_profit_price = entry_price - 2 * self.std_dev[0] * self.std_scale
@@ -103,7 +106,9 @@ class Engulfing(GenericStrategy):
                 # self.sell_order = self.sell_bracket(limitprice=take_profit_price, stopprice=stop_price,
                 #                                     exectype=bt.Order.Market, size=qty)
 
-                valid_entry = self.data.datetime.datetime(60)
+                # valid_entry = self.data.datetime.datetime(60)
+                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(days=valid_days)
+
                 valid_limit = valid_stop = datetime.timedelta(1000000)
                 self.sell_order = self.sell_bracket(limitprice=take_profit_price, limitargs=dict(valid=valid_limit),
                                                     stopprice=stop_price, stopargs=dict(valid=valid_stop),
@@ -118,4 +123,3 @@ class Engulfing(GenericStrategy):
                 self.log(f'SL PRICE = {stop_price}')
                 self.log(f'TP PRICE = {take_profit_price}')
                 self.log(f'CURRENT PRICE = {self.data[0]}')
-
