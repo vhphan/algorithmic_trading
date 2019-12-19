@@ -2,43 +2,38 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import datetime
 import backtrader as bt
-from helpers import position_size
+from helpers import my_position_size
 
 from generic import GenericStrategy
 
 
-class Engulfing(GenericStrategy):
+class StatsArb(GenericStrategy):
 
     def __init__(self):
-        super(Engulfing, self).__init__()
-        # using ta-lib instead
-        # self.ema_s = bt.talib.EMA(self.data, timeperiod=self.params.window_s)
-        # self.ema_m = bt.talib.EMA(self.data, timeperiod=self.params.window_m)
-        # self.ema_l = bt.talib.EMA(self.data, timeperiod=self.params.window_l)
-        self.ichimoku = bt.indicators.Ichimoku()
-        # self.boll = bt.indicators.BollingerBands(period=self.p.window_s, devfactor=self.p.devfactor)
-        self.std_dev = bt.indicators.StandardDeviation(period=self.p.window_s)
-        self.engulfing = bt.talib.CDLENGULFING(self.dataopen, self.datahigh, self.datalow, self.dataclose)
-        # self.bull_cross = bt.ind.CrossOver(self.ema_m, self.ema_l)
 
-        # self.ema_s.csv = True
-        # self.ema_m.csv = True
-        # self.ema_l.csv = True
-        self.engulfing.csv = True
+        super(StatsArb, self).__init__()
+        self.params.window_s = 20
+        self.params.window_l = 200
+        self.value_buy_entry = 0.01
+        self.value_sell_entry = -0.01
+        self.min_price_movement_from_last_trade = 0.01
+
         # self.boll.csv = True
-        self.ichimoku.csv = True
 
-        self.engulfing.plotinfo.subplot = True
-        self.ichimoku.plotinfo.subplot = False
-        self.ichimoku.plotinfo.plotlinelabels = False
+        # self.ichimoku.plotinfo.plotlinelabels = False
 
         # self.ema_s.plotinfo.plot = False
-        # self.ema_m.plotinfo.plot = False
-        # self.ema_l.plotinfo.plot = False
-        self.ichimoku.plot = True
-        # self.boll.plotinfo.plot = False
-        self.std_dev.plotinfo.plot = False
-        # self.bull_cross.plotinfo.plot = False
+
+        current_time_frame = bt.TimeFrame.Names[self.data._timeframe]
+        valid_candles = 10
+        if current_time_frame == 'Days':
+            multiplier = 24 / self.data._compression
+        elif current_time_frame == 'Minutes':
+            multiplier = self.data._compression / 60
+        else:
+            multiplier = 10
+
+        self.valid_hours = valid_candles * multiplier
 
     def next(self):
 
@@ -61,7 +56,6 @@ class Engulfing(GenericStrategy):
         # Check if we are in the market
         # if len(self.data == 86):
         #     print('debug')
-        valid_days = 60 * self.data._timeframe / 24
 
         if not self.position:
 
@@ -71,15 +65,15 @@ class Engulfing(GenericStrategy):
                 stop_price = self.data.close[0] - self.std_dev[0] * self.std_scale
                 take_profit_price = self.data.close[0] + 2 * self.std_dev[0] * self.std_scale
 
-                qty = position_size(cash, stop_price, entry_price, self.params.risk)
-
+                # qty = my_position_size(cash, stop_price, entry_price, self.params.risk)
+                qty = self.size_position(price=entry_price, stop=stop_price, risk=self.params.risk)
                 # self.buy_order = self.buy_bracket(limitprice=take_profit_price, stopprice=stop_price,
                 #                                   exectype=bt.Order.Market, size=qty)
 
                 # valid_entry = self.data.datetime.datetime(60)
 
-                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(days=valid_days)
-                valid_limit = valid_stop = datetime.timedelta(1000000)
+                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(hours=self.valid_hours)
+                valid_limit = valid_stop = datetime.timedelta(1_000_000)
 
                 self.buy_order = self.buy_bracket(limitprice=take_profit_price, limitargs=dict(valid=valid_limit),
                                                   stopprice=stop_price, stopargs=dict(valid=valid_stop),
@@ -95,19 +89,19 @@ class Engulfing(GenericStrategy):
                 self.log(f'TP PRICE = {take_profit_price}')
                 self.log(f'CURRENT PRICE = {self.data[0]}')
 
-            if self.engulfing == -100 and self.data[0] < self.ichimoku.senkou_span_a[0] and self.data[0] < \
-                    self.ichimoku.senkou_span_b[0]:
+            if self.engulfing == -100 and self.data[0] < self.ichimoku.senkou_span_a[0] and self.data[0] < self.ichimoku.senkou_span_b[0]:
                 entry_price = self.data.high[0]
                 stop_price = entry_price + self.std_dev[0] * self.std_scale
                 take_profit_price = entry_price - 2 * self.std_dev[0] * self.std_scale
 
-                qty = position_size(cash, stop_price, entry_price, self.params.risk)
+                # qty = my_position_size(cash, stop_price, entry_price, self.params.risk)
+                qty = self.size_position(price=entry_price, stop=stop_price, risk=self.params.risk)
 
                 # self.sell_order = self.sell_bracket(limitprice=take_profit_price, stopprice=stop_price,
                 #                                     exectype=bt.Order.Market, size=qty)
 
                 # valid_entry = self.data.datetime.datetime(60)
-                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(days=valid_days)
+                valid_entry = self.data.datetime.datetime(0) + datetime.timedelta(hours=self.valid_hours)
 
                 valid_limit = valid_stop = datetime.timedelta(1000000)
                 self.sell_order = self.sell_bracket(limitprice=take_profit_price, limitargs=dict(valid=valid_limit),

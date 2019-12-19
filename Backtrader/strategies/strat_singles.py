@@ -3,11 +3,10 @@ from __future__ import (absolute_import, division, print_function,
 
 import datetime
 import backtrader as bt
-from helpers import position_size, my_std_scale
+from helpers import my_position_size, my_std_scale
 from my_indicators import SpecialEMA
 
 from generic import GenericStrategy
-from engulfing import Engulfing
 
 
 class MomentumStrategy1(GenericStrategy):
@@ -65,7 +64,7 @@ class MomentumStrategy1(GenericStrategy):
                 stop_price = self.data.close[0] - self.std_dev[0] * self.std_scale
                 take_profit_price = self.data.close[0] + 2 * self.std_dev[0] * self.std_scale
 
-                qty = position_size(cash, stop_price, self.data.close[0], self.p.risk)
+                qty = my_position_size(cash, stop_price, self.data.close[0], self.p.risk)
 
                 self.buy_order = self.buy_bracket(limitprice=take_profit_price, stopprice=stop_price,
                                                   exectype=bt.Order.Market, size=qty)
@@ -185,7 +184,7 @@ class StarsStrategy(GenericStrategy):
                     and self.data[0] > self.ichimoku.senkou_span_b[0]:
                 stop_price = self.data.close[0] - self.std_dev[0] * self.std_scale
                 take_profit_price = self.data.close[0] + 2 * self.std_dev[0] * self.std_scale
-                qty = position_size(cash, stop_price, self.data.close[0], self.p.risk)
+                qty = my_position_size(cash, stop_price, self.data.close[0], self.p.risk)
 
                 self.buy_order = self.buy_bracket(limitprice=take_profit_price, stopprice=stop_price,
                                                   exectype=bt.Order.Market, size=qty)
@@ -202,7 +201,7 @@ class StarsStrategy(GenericStrategy):
                 stop_price = self.data.close[0] + self.std_dev[0] * self.std_scale
                 take_profit_price = self.data.close[0] - 2 * self.std_dev[0] * self.std_scale
 
-                qty = position_size(cash, stop_price, self.data.close[0], self.p.risk)
+                qty = my_position_size(cash, stop_price, self.data.close[0], self.p.risk)
 
                 # self.sell_order = self.sell_bracket(limitprice=take_profit_price, stopprice=stop_price,
                 #                                     exectype=bt.Order.Market, size=qty)

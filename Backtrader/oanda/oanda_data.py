@@ -54,7 +54,7 @@ def get_historical_data_factory(instrument, params):
     p_to = params['to'][:10]
     p_from = params['from'][:10]
     p_granularity = params['granularity']
-    filename = f"data/data_{instrument}_{p_from}_{p_to}_{p_granularity}.csv"
+    filename = f"data/data_oanda_{instrument}_{p_from}_{p_to}_{p_granularity}.csv"
     if os.path.isfile(filename):
         df2 = pd.read_csv(filename)
         df2['datetime'] = pd.to_datetime(df2['datetime'])

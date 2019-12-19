@@ -1,10 +1,15 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import csv
 import math
+import os
+
+import backtrader as bt
+import pandas as pd
 
 
-def position_size(cash, stop_price, entry_price, risk):
+def my_position_size(cash, stop_price, entry_price, risk):
     # qty_max = math.floor((0.9 * cash) / close_price)
     # abs (stopprice/entry price)-1
 
@@ -22,6 +27,32 @@ def position_size(cash, stop_price, entry_price, risk):
     print('final size =', qty)
 
     return qty
+
+
+def save_trade_analysis(analyzer, instrument, csv_file):
+    results = dict(
+        instrument=instrument,
+        total_open=analyzer.total.open,
+        total_closed=analyzer.total.closed,
+        total_won=analyzer.won.total,
+        total_lost=analyzer.lost.total,
+        win_streak=analyzer.streak.won.longest,
+        lose_streak=analyzer.streak.lost.longest,
+        pnl_net=round(analyzer.pnl.net.total, 2),
+        strike_rate=round(analyzer.won.total / analyzer.total.closed, 3))
+    csv_columns = results.keys()
+
+    file_exists = os.path.isfile(csv_file)
+    try:
+        with open(csv_file, 'a', newline='') as csv_file:
+
+            writer = csv.DictWriter(csv_file, fieldnames=csv_columns)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(results)
+
+    except IOError:
+        print("I/O error")
 
 
 def print_trade_analysis(analyzer):
@@ -83,4 +114,9 @@ def print_dict(d, depth=0):
             print("  " * depth + f"{k} = {v:.2f}")
 
 
-my_std_scale = 5
+
+
+def save_plots(figs, instrument, strategy, timestamp):
+    for i, fig in enumerate(figs):
+        for j, f in enumerate(fig):
+            f.savefig(f'output/{strategy.__name__}_{instrument}_{timestamp}_{i}{j}.png', dpi=900, bbox_inches='tight')

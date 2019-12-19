@@ -54,12 +54,12 @@ def get_data(date, time_period='histoday', coin='BTC', agg=None):
     return ipdata
 
 
-def get_df(from_date, to_date, time_period='histoday', coin='BTC', agg=None, data_folder = 'data'):
+def get_df(from_date, to_date, time_period='histoday', coin='BTC', agg=None, data_folder='data'):
     """ Get historical price data between two dates. """
     if agg is not None:
         file = f'{data_folder}/{coin}_{time_period}_{from_date}_{to_date}_{agg}.csv'
     else:
-        file = f'{data_folder}/data/{coin}_{time_period}_{from_date}_{to_date}.csv'
+        file = f'{data_folder}/{coin}_{time_period}_{from_date}_{to_date}.csv'
 
     try:
         df = pd.read_csv(file)
